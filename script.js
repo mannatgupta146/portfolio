@@ -40,9 +40,9 @@ if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
   Shery.mouseFollower();
 }
 
-Shery.makeMagnet("nav h5" );
+Shery.makeMagnet("nav h4" );
 
-Shery.textAnimate("nav h4", {
+Shery.textAnimate("", {
   style: 1,
   y: 1,
   delay: 0.3,
@@ -57,3 +57,54 @@ Shery.imageMasker("nav button", {
   ease: "cubic-bezier(0.23, 1, 0.320, 1)",
   duration: 1,
 });
+
+function loadingAnimation() {
+
+    var tl = gsap.timeline()
+    tl.from("#home", {
+        opacity: 0,
+        duration: 0.2,
+        delay: 0.2
+    })
+    tl.from("#home", {
+        transform: "scaleX(0.7) scaleY(0.2) translateY(80%)",
+        borderRadius: "100px",
+        duration: 2,
+        ease: "expo.out"
+    })
+    tl.from("nav", {
+        opacity: 0,
+        delay: -0.2
+    })
+    tl.from("#home h1, #home p, #home div", {
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.2
+    })
+}
+loadingAnimation();
+
+function firstPageAnim() {
+    var tl = gsap.timeline();
+  
+    tl.from("#nav", {
+      y: "-10",
+      opacity: 0,
+      duration: 1.5,
+      ease: Expo.easeInOut,
+    })
+      .to(".boundingelem", {
+        y: 0,
+        ease: Expo.easeInOut,
+        duration: 2,
+        delay: -1,
+        stagger: 0.2,
+      })
+      .from("#homefooter", {
+        y: -10,
+        opacity: 0,
+        duration: 1.5,
+        delay: -1,
+        ease: Expo.easeInOut,
+      });
+  }
