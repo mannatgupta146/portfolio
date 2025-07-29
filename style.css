@@ -13,6 +13,11 @@ body, html{
     font-family: 'Gilroy', sans-serif;
 }
 
+#main {
+    position: relative;
+    z-index: 100;
+}
+
 nav{
     position: fixed;
     display: flex;
