@@ -108,3 +108,24 @@ function firstPageAnim() {
         ease: Expo.easeInOut,
       });
   }
+
+
+  function loaderAnimation() {
+    const loader = document.querySelector('#loader');
+    setTimeout(() => {
+        loader.style.top = '-100%';
+    }, 4200);
+}
+document.addEventListener('DOMContentLoaded', function () {
+    const scroll = new LocomotiveScroll({
+        el: document.querySelector('#main'),
+        smooth: true,
+        smartphone: {
+            smooth: true
+        },
+        tablet: {
+            smooth: true
+        }
+    });
+    loaderAnimation();
+});
