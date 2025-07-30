@@ -3,6 +3,9 @@ let locoScroll;
 function locomotiveAnimation() {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Reset #main transform properties before initializing
+    document.querySelector("#main").style.transform = "none";
+    
     locoScroll = new LocomotiveScroll({
         el: document.querySelector("#main"),
         smooth: true,
@@ -36,35 +39,57 @@ function locomotiveAnimation() {
 function loaderAnimation() {
     const loader = document.querySelector('#loader');
     setTimeout(() => {
-        loader.style.transition = "all 0.7s ease";
-        loader.style.top = "-100%";
-
-        // Optional: completely hide it from DOM
+        // Fade out loader
+        loader.style.opacity = "0";
+        loader.style.pointerEvents = "none";
+        
+        // After fade out completes
         setTimeout(() => {
+            // Completely remove loader
             loader.style.display = "none";
+            
+            // IMPORTANT: Reset GSAP transforms before animations
+            gsap.set("#home", { clearProps: "all" });
+            gsap.set(".boundingelem", { clearProps: "transform,opacity" });
+            
+            // Start animations
+            loadingAnimation();
+            firstPageAnim();
+            
+            // Force updates
+            locoScroll.update();
+            ScrollTrigger.refresh();
+            
+            // Make main content visible
+            document.querySelector("#main").style.opacity = "1";
         }, 700);
-
-        // Start animations AFTER loader is gone
-        loadingAnimation();
-        firstPageAnim();
-        locoScroll.update(); // <-- very important after DOM updates
-        ScrollTrigger.refresh();
     }, 4200);
 }
 
 function loadingAnimation() {
+    // Reset transforms before animating
+    gsap.set("#home", { 
+        opacity: 1,
+        scaleX: 1,
+        scaleY: 1,
+        translateY: 0,
+        borderRadius: 0 
+    });
+    
     var tl = gsap.timeline();
     tl.from("#home", {
         opacity: 0,
         duration: 0.2,
         delay: 0.2
-    });
+    }, "start");
     tl.from("#home", {
-        transform: "scaleX(0.7) scaleY(0.2) translateY(80%)",
+        scaleX: 0.7,
+        scaleY: 0.2,
+        translateY: "80%",
         borderRadius: "100px",
         duration: 2,
         ease: "expo.out"
-    });
+    }, "start");
     tl.from("nav", {
         opacity: 0,
         delay: -0.2
@@ -77,22 +102,26 @@ function loadingAnimation() {
 }
 
 function firstPageAnim() {
+    // Reset transforms before animating
+    gsap.set(".boundingelem", { y: 0, opacity: 1 });
+    gsap.set("#homefooter", { y: 0, opacity: 1 });
+    
     var tl = gsap.timeline();
-
     tl.from("nav", {
         y: "-10",
         opacity: 0,
         duration: 1.5,
         ease: "expo.inOut",
-    })
-    .to(".boundingelem", {
+    });
+    tl.to(".boundingelem", {
         y: 0,
+        opacity: 1,
         ease: "expo.inOut",
         duration: 2,
         delay: -1,
         stagger: 0.2,
-    })
-    .from("#homefooter", {
+    });
+    tl.from("#homefooter", {
         y: -10,
         opacity: 0,
         duration: 1.5,
