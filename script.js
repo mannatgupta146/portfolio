@@ -1,160 +1,135 @@
-let locoScroll;
-
-function locomotiveAnimation() {
-    gsap.registerPlugin(ScrollTrigger);
-
-    // Reset #main transform properties before initializing
-    document.querySelector("#main").style.transform = "none";
-    
-    locoScroll = new LocomotiveScroll({
-        el: document.querySelector("#main"),
+document.addEventListener('DOMContentLoaded', function () {
+    const scroll = new LocomotiveScroll({
+        el: document.querySelector('#main'),
         smooth: true,
-        tablet: { smooth: true },
-        smartphone: { smooth: true }
+        smartphone: {
+            smooth: true
+        },
+        tablet: {
+            smooth: true
+        }
     });
 
-    locoScroll.on("scroll", ScrollTrigger.update);
+    page3Animation(); // Use only once
+    menuAnimation();
+    loaderAnimation();
+});
 
-    ScrollTrigger.scrollerProxy("#main", {
-        scrollTop(value) {
-            return arguments.length
-                ? locoScroll.scrollTo(value, 0, 0)
-                : locoScroll.scroll.instance.scroll.y;
-        },
-        getBoundingClientRect() {
-            return {
-                top: 0,
-                left: 0,
-                width: window.innerWidth,
-                height: window.innerHeight
-            };
-        },
-        pinType: document.querySelector("#main").style.transform ? "transform" : "fixed"
+function page3Animation() {
+    const elemC = document.querySelector('#elem-container');
+    const fixed = document.querySelector('#fixed-image');
+    if (!elemC || !fixed) return;
+
+    // Track touch state
+    let touchActive = false;
+    
+    const showFixed = () => { 
+        fixed.style.display = 'block';
+        // Prevent background scrolling
+        document.body.style.overflow = 'hidden';
+    };
+    
+    const hideFixed = () => { 
+        fixed.style.display = 'none';
+        // Restore scrolling
+        document.body.style.overflow = '';
+    };
+
+    // Desktop events
+    elemC.addEventListener('mouseenter', showFixed);
+    elemC.addEventListener('mouseleave', hideFixed);
+
+    // Mobile touch handling
+    elemC.addEventListener('touchstart', (e) => {
+        touchActive = true;
+        showFixed();
+        // Prevent immediate hide on scroll
+        setTimeout(() => touchActive = false, 100);
+    });
+    
+    // Hide when tapping outside image
+    document.addEventListener('touchend', (e) => {
+        if (touchActive && fixed.style.display === 'block') {
+            if (!e.target.closest('.elem')) {
+                hideFixed();
+            }
+        }
     });
 
-    ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
-    ScrollTrigger.refresh();
+    // Handle per-element image setting
+    const elems = document.querySelectorAll('.elem');
+    elems.forEach(e => {
+        const setImage = () => {
+            const image = e.getAttribute('data-image');
+            fixed.style.backgroundImage = `url(${image})`;
+        };
+
+        // Desktop
+        e.addEventListener('mouseenter', setImage);
+        
+        // Mobile
+        e.addEventListener('touchstart', (e) => {
+            setImage();
+            e.stopPropagation(); // Prevent container handler
+        });
+    });
+}
+
+const swiper = new Swiper('.mySwiper', {
+    slidesPerView: 'auto',
+    spaceBetween: 40,
+    freeMode: true,
+    grabCursor: true,
+    watchOverflow: true,
+});
+
+function menuAnimation() {
+    const menu = document.querySelector('nav h3');
+    const full = document.querySelector('#full-scr');
+    const navimg = document.querySelector('nav img');
+    let flag = 0;
+    let touchStartTime;
+    let touchMoved = false;
+
+    const toggleMenu = () => {
+        if (flag === 0) {
+            full.style.top = '0';
+            navimg.style.opacity = 0;
+            flag = 1;
+        } else {
+            full.style.top = '-100%';
+            navimg.style.opacity = 1;
+            flag = 0;
+        }
+    };
+
+    menu.addEventListener('click', (e) => {
+        // Prevent click if triggered by touch to avoid double-toggle
+        if (!touchMoved) toggleMenu();
+    });
+
+    menu.addEventListener('touchstart', () => {
+        touchMoved = false;
+        touchStartTime = new Date().getTime();
+    });
+
+    menu.addEventListener('touchmove', () => {
+        touchMoved = true;
+    });
+
+    menu.addEventListener('touchend', (e) => {
+        const touchDuration = new Date().getTime() - touchStartTime;
+        // Trigger only if touch was quick (under 300ms) and didn't move
+        if (!touchMoved && touchDuration < 300) {
+            e.preventDefault(); // Prevents mouse/click events
+            toggleMenu();
+        }
+    });
 }
 
 function loaderAnimation() {
     const loader = document.querySelector('#loader');
     setTimeout(() => {
-        // Fade out loader
-        loader.style.opacity = "0";
-        loader.style.pointerEvents = "none";
-        
-        // After fade out completes
-        setTimeout(() => {
-            // Completely remove loader
-            loader.style.display = "none";
-            
-            // IMPORTANT: Reset GSAP transforms before animations
-            gsap.set("#home", { clearProps: "all" });
-            gsap.set(".boundingelem", { clearProps: "transform,opacity" });
-            
-            // Start animations
-            loadingAnimation();
-            firstPageAnim();
-            
-            // Force updates
-            locoScroll.update();
-            ScrollTrigger.refresh();
-            
-            // Make main content visible
-            document.querySelector("#main").style.opacity = "1";
-        }, 700);
+        loader.style.top = '-100%';
     }, 4200);
 }
-
-function loadingAnimation() {
-    // Reset transforms before animating
-    gsap.set("#home", { 
-        opacity: 1,
-        scaleX: 1,
-        scaleY: 1,
-        translateY: 0,
-        borderRadius: 0 
-    });
-    
-    var tl = gsap.timeline();
-    tl.from("#home", {
-        opacity: 0,
-        duration: 0.2,
-        delay: 0.2
-    }, "start");
-    tl.from("#home", {
-        scaleX: 0.7,
-        scaleY: 0.2,
-        translateY: "80%",
-        borderRadius: "100px",
-        duration: 2,
-        ease: "expo.out"
-    }, "start");
-    tl.from("nav", {
-        opacity: 0,
-        delay: -0.2
-    });
-    tl.from("#home h1, #home p, #home div", {
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.2
-    });
-}
-
-function firstPageAnim() {
-    // Reset transforms before animating
-    gsap.set(".boundingelem", { y: 0, opacity: 1 });
-    gsap.set("#homefooter", { y: 0, opacity: 1 });
-    
-    var tl = gsap.timeline();
-    tl.from("nav", {
-        y: "-10",
-        opacity: 0,
-        duration: 1.5,
-        ease: "expo.inOut",
-    });
-    tl.to(".boundingelem", {
-        y: 0,
-        opacity: 1,
-        ease: "expo.inOut",
-        duration: 2,
-        delay: -1,
-        stagger: 0.2,
-    });
-    tl.from("#homefooter", {
-        y: -10,
-        opacity: 0,
-        duration: 1.5,
-        delay: -1,
-        ease: "expo.inOut",
-    });
-}
-
-// ========== SHERY ANIMATIONS ==========
-if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
-    Shery.mouseFollower();
-}
-
-Shery.makeMagnet("nav h4");
-
-Shery.textAnimate("", {
-    style: 1,
-    y: 1,
-    delay: 0.3,
-    duration: 10,
-    ease: "cubic-bezier(0.23, 1, 0.320, 1)",
-    multiplier: 1,
-});
-
-Shery.imageMasker("nav button", {
-    mouseFollower: true,
-    text: "Click Me",
-    ease: "cubic-bezier(0.23, 1, 0.320, 1)",
-    duration: 1,
-});
-
-// ========== RUN ON LOAD ==========
-document.addEventListener('DOMContentLoaded', function () {
-    locomotiveAnimation();
-    loaderAnimation();
-});
